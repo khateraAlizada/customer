@@ -14,9 +14,9 @@ function App() {
         i.storeID +
         " ,sku:  " +
         i.sku +
-        ", quantiy: " +
+        " , quantity" +
         i.quantity +
-        " ,aisle:  " +
+        " , aisle" +
         i.aisle +
         ",shelf:  " +
         i.shelf +
@@ -34,7 +34,9 @@ function App() {
   }, [model]);
 
   const createShelfReport = (e) => {
-    let arg1 = document.getElementById("sku");
+    let arg1 = document.getElementById("storeID");
+    let arg2 = document.getElementById("aisle");
+    let arg3 = document.getElementById("shelf");
 
     document.getElementById("storeListShelfItems").value =
       "Shelf Report created!";
@@ -42,14 +44,17 @@ function App() {
 
   const generateShelfReport = (e) => {
     // potentially modify the model
-    let sku = document.getElementById("sku").value;
-    //let quantity = document.getElementById("quantity").value;
+    let storeID = document.getElementById("storeID").value;
+    let aisle = document.getElementById("aisle").value;
+    let shelf = document.getElementById("shelf").value;
 
     var base_url =
       "https://cn74yl30dg.execute-api.us-east-1.amazonaws.com/Prod/";
 
     let payload = {
-      sku: sku,
+      storeID: storeID,
+      aisle: aisle,
+      shelf: shelf,
     };
     let msg = JSON.stringify(payload);
 
@@ -65,8 +70,8 @@ function App() {
         const list = response.data.result;
 
         for (let i = 0; i < list.length; i++) {
-          console.log(list[i].sku);
-          model.inventories.push(
+          console.log(list[i].storeID);
+          model.listShelfItems.push(
             new ListShelfItems(
               list[i].storeID,
               list[i].sku,
@@ -121,6 +126,8 @@ function App() {
         i.longitude +
         ", latitude: " +
         i.latitude +
+        ", distance: " +
+        i.distance +
         "<br>";
     });
     //insert HTML in the <div> with
@@ -129,27 +136,35 @@ function App() {
     let cd = document.getElementById("storesList");
     cd.innerHTML = str;
   };
+  /** Ensures initial rendering is performed, and that whenever model changes, it is re-rendered. */
+  React.useEffect(() => {
+    updateStoreList();
+  }, [model]);
 
   const createReport = (e) => {
-    let arg1 = document.getElementById("storesList");
-
+    let arg1 = document.getElementById("custLong");
+    let arg2 = document.getElementById("custLat");
     document.getElementById("storesList").value = "Report created!";
   };
 
   const storeListReport = (e) => {
     // potentially modify the model
-    let storeID = document.getElementById("storesList").value;
-    //let quantity = document.getElementById("quantity").value;
+
+    let custLat = document.getElementById("custLat").value;
+    let custLong = document.getElementById("custLong").value;
 
     var base_url =
       "https://cn74yl30dg.execute-api.us-east-1.amazonaws.com/Prod/";
 
-    let payload = {};
+    let payload = {
+      custLong: custLong,
+      custLat: custLat,
+    };
     let msg = JSON.stringify(payload);
 
     axios({
       method: "post",
-      url: base_url + "listStoreC",
+      url: base_url + "listStores",
       data: {
         body: msg,
       },
@@ -159,9 +174,14 @@ function App() {
         const list = response.data.result;
 
         for (let i = 0; i < list.length; i++) {
-          console.log(list[i].sku);
+          console.log(list[i].idstore);
           model.storesList.push(
-            new StoresList(list[i].idstore, list[i].longitude, list[i].latitude)
+            new StoresList(
+              list[i].idstore,
+              list[i].longitude,
+              list[i].latitude,
+              list[i].distance
+            )
           );
         }
       })
@@ -178,12 +198,12 @@ function App() {
     let str = "";
     model.findItem.forEach((i) => {
       str +=
-        "idstore: " +
+        "sku: " +
+        i.sku +
+        ", storeID: " +
         i.idstore +
-        ", longitude: " +
-        i.longitude +
-        ", latitude: " +
-        i.latitude +
+        ", distance: " +
+        i.distance +
         "<br>";
     });
     //insert HTML in the <div> with
@@ -193,13 +213,20 @@ function App() {
     cd.innerHTML = str;
   };
 
-  const findItemReport = (e) => {
-    let arg1 = document.getElementById("storesList");
+  /** Ensures initial rendering is performed, and that whenever model changes, it is re-rendered. */
+  React.useEffect(() => {
+    updateFindItem();
+  }, [model]);
 
-    document.getElementById("storesList").value = "Report created!";
+  const findItemReport = (e) => {
+    let arg1 = document.getElementById("sku");
+    let arg2 = document.getElementById("longitude");
+    let arg3 = document.getElementById("latitude");
+
+    document.getElementById("findItemList").value = "Report created!";
   };
 
-  const findItem = (e) => {
+  const findItemHandle = (e) => {
     // potentially modify the model
     let sku = document.getElementById("sku").value;
     let longitude = document.getElementById("longitude").value;
@@ -210,8 +237,8 @@ function App() {
 
     let payload = {
       sku: sku,
-      longitude: longitude,
-      latitude: latitude,
+      custLong: longitude,
+      custLat: latitude,
     };
     let msg = JSON.stringify(payload);
 
@@ -228,8 +255,8 @@ function App() {
 
         for (let i = 0; i < list.length; i++) {
           console.log(list[i].sku);
-          model.storesList.push(
-            new FindItem(list[i].sku, list[i].longitude, list[i].latitude)
+          model.findItem.push(
+            new FindItem(list[i].sku, list[i].idstore, list[i].distance)
           );
         }
       })
@@ -285,21 +312,23 @@ function App() {
 
   return (
     <div className="App">
-      <h3>List Items on Aisle/Shelf</h3>
+      <h3>Welcome to Customer Page </h3>
       storeID: <input id="storeID" />
-      aisle: <input id="aisel" />
+      aisle: <input id="aisle" />
       shelf: <input id="shelf" />
       <button onClick={(e) => generateShelfReport()}>
         list Items on Aisle/Shelf
       </button>
       <div id="storeListShelfItems"></div>
-      <h3>Find Item</h3>
-      sku: <input sku="sku" />
-      longitude: <input longitude="longitude" />
-      latitude: <input latitude="latitude" />
-      <button onClick={(e) => findItem()}></button>
+      <p></p>
+      sku: <input id="sku" />
+      longitude: <input id="longitude" />
+      latitude: <input id="latitude" />
+      <button onClick={(e) => findItemHandle()}>Find Item</button>
       <div id="findItemList"></div>
       <p></p>
+      custLong: <input id="custLong" />
+      custLat: <input id="custLat" />
       <button onClick={(e) => storeListReport()}>List stores</button>
       <div id="storesList"></div>
     </div>

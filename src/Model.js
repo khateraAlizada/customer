@@ -1,25 +1,28 @@
 export class FindItem {
-  constructor(idstore, longitude, latitude) {
+  constructor(sku, idstore, distance) {
+    this.sku = sku;
     this.idstore = idstore;
-    this.longitude = longitude;
-    this.latitude = latitude;
+    this.distance = distance;
   }
   toString() {
-    return this.idstore + " " + this.longitude + " " + this.latitude;
+    return this.sku + " " + this.idstore + " " + this.distance;
   }
 }
 
 export class StoresList {
-  constructor(idstore, longitude, latitude) {
+  constructor(idstore, longitude, latitude, distance) {
     this.idstore = idstore;
     this.longitude = longitude;
     this.latitude = latitude;
+    this.distance = distance;
   }
   toString() {
-    return this.idstore + " " + this.longitude + " " + this.latitude;
+    return (
+      this.idstore + " " + this.longitude + " " + this.latitude,
+      +" " + this.distance
+    );
   }
 }
-
 
 export class ListShelfItems {
   constructor(storeID, sku, quantity, aisle, shelf) {
@@ -46,7 +49,6 @@ export class ListShelfItems {
 
 export class Model {
   constructor() {
-
     this.listShelfItems = [];
     this.storesList = [];
     this.findItem = [];
@@ -54,7 +56,7 @@ export class Model {
 
   copy() {
     let m = new Model();
-  
+
     m.listShelfItems = this.listShelfItems;
     m.storesList = this.storesList;
     m.findItem = this.findItem;

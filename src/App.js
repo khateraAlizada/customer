@@ -68,6 +68,7 @@ function App() {
       .then(function (response) {
         console.log(response.data.result);
         const list = response.data.result;
+        model.listShelfItems = [];
 
         for (let i = 0; i < list.length; i++) {
           console.log(list[i].storeID);
@@ -81,13 +82,12 @@ function App() {
             )
           );
         }
+        setModel(model.copy()); // this Triggers the redraw
       })
       .catch(function (error) {
         console.log(error);
       });
     // clear inputs
-
-    setModel(model.copy()); // this Triggers the redraw
   };
 
   // const updateShipments = () => {
@@ -172,6 +172,7 @@ function App() {
       .then(function (response) {
         console.log(response.data.result);
         const list = response.data.result;
+        model.storesList = [];
 
         for (let i = 0; i < list.length; i++) {
           console.log(list[i].idstore);
@@ -184,13 +185,12 @@ function App() {
             )
           );
         }
+        setModel(model.copy()); // this Triggers the redraw
       })
       .catch(function (error) {
         console.log(error);
       });
     // clear inputs
-
-    setModel(model.copy()); // this Triggers the redraw
   };
 
   const updateFindItem = () => {
@@ -200,10 +200,18 @@ function App() {
       str +=
         "sku: " +
         i.sku +
+        ", name: " +
+        i.name +
         ", storeID: " +
         i.idstore +
         ", distance: " +
         i.distance +
+        ", longitude: " +
+        i.longitude +
+        ", latitude: " +
+        i.latitude +
+        ", quantity: " +
+        i.quantity +
         "<br>";
     });
     //insert HTML in the <div> with
@@ -220,6 +228,8 @@ function App() {
 
   const findItemReport = (e) => {
     let arg1 = document.getElementById("sku");
+    let arg4 = document.getElementById("namef");
+    let arg5 = document.getElementById("descriptionf");
     let arg2 = document.getElementById("longitude");
     let arg3 = document.getElementById("latitude");
 
@@ -229,6 +239,8 @@ function App() {
   const findItemHandle = (e) => {
     // potentially modify the model
     let sku = document.getElementById("sku").value;
+    let name = document.getElementById("namef").value;
+    let description = document.getElementById("descriptionf").value;
     let longitude = document.getElementById("longitude").value;
     let latitude = document.getElementById("latitude").value;
 
@@ -237,6 +249,8 @@ function App() {
 
     let payload = {
       sku: sku,
+      name: name,
+      description: description,
       custLong: longitude,
       custLat: latitude,
     };
@@ -252,63 +266,74 @@ function App() {
       .then(function (response) {
         console.log(response.data.result);
         const list = response.data.result;
-
+        model.findItem = [];
         for (let i = 0; i < list.length; i++) {
           console.log(list[i].sku);
           model.findItem.push(
-            new FindItem(list[i].sku, list[i].idstore, list[i].distance)
+            new FindItem(
+              list[i].sku,
+              list[i].name,
+              list[i].idstore,
+              list[i].distance,
+              list[i].longitude,
+              list[i].latitude,
+              list[i].quantity
+            )
           );
         }
+        setModel(model.copy()); // this Triggers the redraw
       })
       .catch(function (error) {
         console.log(error);
       });
-    // clear inputs
-
-    setModel(model.copy()); // this Triggers the redraw
   };
 
-  // this can be place inside return
-  //  storeID: <input id="storeID" />;
-  //  sku: <input id="sku" />;
-  //  quantity: <input id="quantity" />;
+  const updateBuyItem = () => {
+    let str = "";
+    model.buyItems.forEach((i) => {
+      str += "affectedRows: " + i.affectedRows + "<br>";
+    });
+    let cd = document.getElementById("buyItems");
+    cd.innerHTML = str;
+  };
+  React.useEffect(() => {
+    updateBuyItem();
+  }, [model]);
+  const buyItem = (e) => {
+    let storeID = document.getElementById("storeIDB").value;
+    let sku = document.getElementById("skuB").value;
+    let quantity = document.getElementById("quantityb").value;
 
-  // this can be place inside return
-  //  storeID: <input id="storeID" />;
-  //  sku: <input id="sku" />;
-  //  quantity: <input id="quantity" />;
-
-  // this can be place inside return
-  //  storeID: <input id="storeID" />;
-  //  sku: <input id="sku" />;
-  //  quantity: <input id="quantity" />;
-
-  //  <table className="table table-bordered">
-  //       <tr>
-  //         <th>storeID</th>
-  //         <th>sku</th>
-  //         <th>quantity</th>
-  //       </tr>
-
-  //       {shipment.map((item, index) => (
-  //         <tr data-index={index}>
-  //           <td>{item.storeID}</td>
-  //           <td>{item.sku}</td>
-  //           <td>{item.quantity}</td>
-  //         </tr>
-  //       ))}
-  //     </table>
-  //     <button onClick={(e) => processShipment()}> Process Shipment </button>
-  //     result: <input id="shipment-result" readOnly />
-  //     <div id="shipment-list"></div>
-  // idstore: <input id="idstore" />
-  //Store Inventory: <p id="storeInventory"></p>
-  // Store Inventory: <p id="storeInventory"></p>
-  // <button onClick={(e) => generateInventoryReport()}>
-  //   {" "}
-  //   Generate Inventory{" "}
-  // </button>;
-  //<div id="shipment-list"></div>
+    var base_url =
+      "https://cn74yl30dg.execute-api.us-east-1.amazonaws.com/Prod/";
+    let payload = {
+      storeID: storeID,
+      sku: sku,
+      quantity: quantity,
+    };
+    let msg = JSON.stringify(payload);
+    axios({
+      method: "post",
+      url: base_url + "buyItem",
+      data: {
+        body: msg,
+      },
+    })
+      .then(function (response) {
+        console.log(JSON.stringify(response));
+        console.log(response.data.result);
+        const list = response.data.result;
+        model.buyItems = [];
+        for (let i = 0; i < list.length; i++) {
+          console.log(list[i].affecteRows);
+          model.buyItems.push(new buyItem(list[i].affectedRows));
+        }
+        setModel(model.copy());
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   return (
     <div className="App">
@@ -322,10 +347,18 @@ function App() {
       <div id="storeListShelfItems"></div>
       <p></p>
       sku: <input id="sku" />
+      name: <input id="namef" />
+      description: <input id="descriptionf" />
       longitude: <input id="longitude" />
       latitude: <input id="latitude" />
       <button onClick={(e) => findItemHandle()}>Find Item</button>
       <div id="findItemList"></div>
+      <p></p>
+      storeID : <input id="storeIDB" />
+      sku: <input id="skuB" />
+      quantity: <input id="quantityb" />
+      <button onClick={(e) => buyItem()}>Buy Item</button>
+      <div id="buyItems"></div>
       <p></p>
       custLong: <input id="custLong" />
       custLat: <input id="custLat" />

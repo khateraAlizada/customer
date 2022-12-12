@@ -1,11 +1,38 @@
-export class FindItem {
-  constructor(sku, idstore, distance) {
-    this.sku = sku;
-    this.idstore = idstore;
-    this.distance = distance;
+export class BuyItem {
+  constructor(affectedRows) {
+    this.affectedRows = affectedRows;
   }
   toString() {
-    return this.sku + " " + this.idstore + " " + this.distance;
+    return this.affectedRows;
+  }
+}
+
+export class FindItem {
+  constructor(sku, name, idstore, distance, longitude, latitude, quantity) {
+    this.sku = sku;
+    this.name = name;
+    this.idstore = idstore;
+    this.distance = distance;
+    this.longitude = longitude;
+    this.latitude = latitude;
+    this.quantity = quantity;
+  }
+  toString() {
+    return (
+      this.sku +
+      " " +
+      this.name +
+      " " +
+      this.idstore +
+      " " +
+      this.distance +
+      " " +
+      this.longitude +
+      " " +
+      this.latitude +
+      " " +
+      this.quantity
+    );
   }
 }
 
@@ -52,6 +79,7 @@ export class Model {
     this.listShelfItems = [];
     this.storesList = [];
     this.findItem = [];
+    this.buyItems = [];
   }
 
   copy() {
@@ -60,6 +88,7 @@ export class Model {
     m.listShelfItems = this.listShelfItems;
     m.storesList = this.storesList;
     m.findItem = this.findItem;
+    m.buyItems = this.buyItems;
     return m;
   }
 }
